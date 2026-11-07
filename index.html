@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Spin the Wheel</title>
+<meta name="description" content="Can’t decide which Teen Patti variation to play? Spin the wheel!">
+<meta property="og:title" content="Spin the Wheel">
+<meta property="og:description" content="Can’t decide which Teen Patti variation to play? Spin the wheel!">
+<style>
+:root{--bg:#f7f2ea;--bg2:#e8dfd0;--ink:#2b2a33;--mut:#6b6877;--card:#ffffff;--row:#f4efe6;--line:#d9d2c3;--acc:#3b4a8c;--onacc:#ffffff;--ptr:#2b2f55;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root{--bg:#1d1f2b;--bg2:#12131a;--ink:#f1eee7;--mut:#a5a2b3;--card:#262836;--row:#1d1f2b;--line:#3a3d52;--acc:#9aa8ff;--onacc:#12131a;--ptr:#f1eee7}}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(160deg,var(--bg),var(--bg2));background-attachment:fixed;color:var(--ink);font-family:Georgia,"Times New Roman",serif;text-align:center;padding:10px}
+.top{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}
+.lnk{position:relative;padding:9px 12px !important;display:inline-flex;align-items:center;background:var(--card);color:var(--acc);border:1px solid var(--line);border-radius:16px;padding:6px 12px;font-size:.8rem}
+h1{color:var(--ink);margin:22px 0 38px;font-size:2rem;letter-spacing:.5px}
+.wrap{position:relative;width:min(96vw,680px,max(300px,calc(100dvh - 270px)));margin:0 auto}
+canvas{width:100%;display:block;border-radius:50%;box-shadow:0 14px 40px rgba(40,40,70,.28)}
+.ptr{position:absolute;top:-12px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:18px solid transparent;border-right:18px solid transparent;border-top:44px solid var(--ptr);filter:drop-shadow(0 3px 3px rgba(0,0,0,.4));z-index:2}
+button{font-family:inherit;cursor:pointer}
+#spin{display:block;margin:22px auto 10px;background:var(--acc);color:var(--onacc);border:0;border-radius:40px;padding:14px 56px;font-size:1.3rem;font-weight:bold;box-shadow:0 6px 16px rgba(59,74,140,.35);letter-spacing:1px}
+#spin:disabled{opacity:.6}
+label{display:block;color:var(--mut);font-size:.9rem;padding-bottom:6px}
+.ibtn{background:none;border:2px solid var(--acc);color:var(--acc);border-radius:50%;width:28px;height:28px;font-weight:bold;font-style:italic;flex:none}
+.row{display:flex;gap:10px;align-items:flex-start;background:var(--row);border-radius:10px;padding:10px;margin-bottom:8px;text-align:left}
+.row b{color:var(--acc)}
+.row div{flex:1;font-size:.9rem}
+.row small{color:var(--mut);display:block}
+.row.off{opacity:.55}
+.pri{background:var(--acc);color:var(--onacc);border:0;border-radius:8px;padding:8px 18px;font-weight:bold}
+.dng{background:#a83a3a;color:#fff;border:0;border-radius:8px;padding:6px 12px}
+#modal{position:fixed;inset:0;background:rgba(10,10,20,.6);display:none;align-items:center;justify-content:center;padding:16px;z-index:5}
+#box{background:var(--card);color:var(--ink);border-radius:14px;width:100%;max-width:520px;max-height:85vh;max-height:85dvh;overflow:auto;padding:18px;text-align:left}
+#box h2{color:var(--acc);margin-top:0}
+input,textarea{width:100%;margin:4px 0;padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--row);color:var(--ink);font-family:inherit;font-size:1rem}
+.bdg{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;border-radius:9px;background:var(--acc);color:var(--onacc);font-size:.7rem;display:none;align-items:center;justify-content:center;padding:0 4px}
+.top{gap:8px}
+@media (max-width:480px){h1{font-size:1.6rem;margin:14px 0 30px}#spin{padding:12px 44px}}
+.lead{font-weight:bold;margin:0 0 4px}
+#box h3{margin:16px 0 6px;font-size:.78rem;text-transform:uppercase;letter-spacing:1.2px;color:var(--mut)}
+#box ul{margin:0;padding-left:20px}
+#box li{margin-bottom:6px;line-height:1.4}
+.ex{background:var(--row);border-left:4px solid var(--acc);border-radius:8px;padding:10px 12px;font-size:.95rem;line-height:1.45}
+</style>
+</head>
+<body>
+<div class="top">
+<button class="lnk" onclick="openAll()" aria-label="All variations" title="All variations"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg></button>
+<button class="lnk" id="dbtn" onclick="openOff()" aria-label="Discarded variations" title="Discarded variations"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6"/></svg><span class="bdg" id="dbadge">0</span></button>
+<button class="lnk" onclick="openManage()" aria-label="Add or remove variations" title="Add or remove variations"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
+<button class="lnk" id="snd" onclick="toggleSnd()" aria-label="Sound on or off"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg></button>
+</div>
+<h1>Spin the Wheel</h1>
+<div class="wrap"><div class="ptr"></div><canvas id="c" width="1400" height="1400"></canvas></div>
+<button id="spin" onclick="spin()">SPIN</button>
+<label><input type="checkbox" id="rm" style="width:auto"> Don’t pick a variation again</label>
+<div id="modal" onclick="if(event.target.id==='modal')closeM()"><div id="box"></div></div>
+<script>
+const D=[
+["Simple Royal","Normal teen patti. Usually the opening round of the session."],
+["Lowest Game Wins","Normal game, but the lowest hand wins."],
+["Discard One","Deal 4 cards. Keep the best 3, discard the 4th.","Each player gets 4 cards and secretly discards one, keeping the best 3-card game. Then normal betting and showdown."],
+["Imagine One","Deal only 2 cards. Imagine the 3rd card that completes your game best.","Each player gets just 2 cards. In your head you pick whatever third card suits you best. Betting proceeds as normal with everyone playing their imagined hand."],
+["Highest / Lowest Card Joker","Deal 4 cards. Each player lowest card is their own joker."],
+["Jokers in the Middle","Deal 3 cards, open 2. All numbers between them are jokers.","Open 2 cards on the table. Every number strictly between them is a joker. Example: open 3 and 7, then 4, 5 and 6 are jokers."],
+["AK47","Deal 3 cards. Ace, King, 4 and 7 are jokers."],
+["Skip-Sequence","Deal 5 cards. A skip or a sequence pair forms a joker.","Each player gets 5 cards. A sequence is two consecutive cards (3,4). A skip is two cards with a gap of one (3,5). Minimum one joker is needed to play, and skip and sequence can each be used only once."],
+["Passing Cards","Deal 3 each, pass 3 along the table, then 3 jokers open.","Deal 3 cards to everyone and 3 extra to the first player. Each player passes 3 cards to the next, until the dealer puts 3 back into the pack. Then 3 jokers are opened."],
+["Pack Jack","3 open jokers. When anyone packs, their cards become the new jokers.","Deal 3 cards each and open 3 cards as jokers. Whenever a player packs, those cards become the new 3 jokers."],
+["Closest to 555","Cards as digits (Ace=1, picture=0). Closest to 555 wins. Swap for 2 counters, 2 rounds."],
+["Rotating Jokers","Each player has 1 open private joker and 1 closed card. On a pack, the closed card becomes universal and open jokers rotate."],
+["Banko","Turn by turn. Bet whether the next card falls between two open cards. Max bet is 1/4, then 1/2, then full pot."],
+["Complete Game, 2 Open","Each player gets 1 card. 4-5 pairs open on table. Your game is your card plus any one pair."],
+["Card, Color, Burst","Three face-down cards open as the pot grows: a joker, a joker suit, then a burst card.","Deal 3 cards to each player and keep 3 cards face down on the table. The dealer decides at what pot amounts they open. 1st card opened: its number is the joker. 2nd card opened: its suit is the joker, so all cards of that suit are jokers. 3rd card opened: the burst card. Anyone holding that burst card is eliminated from the game."],
+["In-Out","Say in or out. Outs become the new jokers. Winner takes the kitty, losers pay in.","Everyone antes 2 counters, gets 3 cards, and 3 jokers are opened. Turn by turn each player says in or out. An out player cards become the new jokers. In players compare hands on the final jokers. The winner takes the kitty and the losers pay the same amount in. If only one player is in, they play against a fresh bank hand. Cap the loss amount (say 30)."],
+["3-2-1","Deal 6 cards. Split into 3-card, 2-card (Imagine One) and 1-card (highest) games. Win 2 of 3.","Each player arranges 6 cards into a 3-card normal game, a 2-card Imagine One game, and a 1-card highest card game. Betting happens on each in order. Whoever wins two or more takes all. A 3-way split repeats with only those three players."],
+["1-2-3 Shopping","Three shopping rounds costing 1, 2 and 3 counters to change cards."],
+["Auction","Two 3-card games on the table, each with one open joker. Bid to buy them."],
+["One Joker, One Bust","Two hidden cards: a joker and a bust. Pay 5 to see both, 10 to see only the joker."],
+["2 Rounds of Buying Cards","Each player has 1 open card. Bid for each other cards over 2 rounds."],
+["All Open","Everyone holds cards on their forehead. See all hands but your own."],
+["2 Cards Open","Two cards face up for each player, one face down."],
+];
+const F={
+"Simple Royal": {
+"p": [
+"Each player gets 3 cards.",
+"Hands rank from lowest to highest: top card, pair, colour, sequence, pure sequence, trio.",
+"Normal betting, then showdown.",
+"Usually the opening round of the session."
+],
+"e": "At the showdown, Asha shows 7-7-K (a pair) and Ravi shows 4-5-6 in mixed suits (a sequence). A sequence beats a pair, so Ravi wins the pot."
+},
+"Lowest Game Wins": {
+"p": [
+"Same as normal 3-card teen patti, with normal betting.",
+"At the showdown the lowest hand wins, not the highest."
+],
+"e": "At the showdown, Asha shows a trio of kings and Ravi shows a top-card hand of 2-5-9. Ravi has the lowest game, so Ravi wins."
+},
+"Discard One": {
+"p": [
+"Deal 4 cards to every player.",
+"Look at your cards and pick the best 3.",
+"Discard the 4th card.",
+"Then normal betting and showdown."
+],
+"e": "You are dealt 4, 5, 6 and K. You discard the K and keep 4-5-6, a sequence."
+},
+"Imagine One": {
+"p": [
+"Deal only 2 cards to each player.",
+"Imagine any 3rd card that completes your game best.",
+"Bet according to the game you imagine.",
+"Then normal betting and showdown."
+],
+"e": "You hold the 8 and 9 of hearts. You imagine the 10 of hearts as your third card, giving you a pure sequence, and bet confidently."
+},
+"Highest / Lowest Card Joker": {
+"p": [
+"Deal 4 cards to everyone.",
+"Your lowest card is your own personal joker.",
+"It is a joker only for you, not for the other players.",
+"Build your best game with it, then normal betting."
+],
+"e": "You hold 3, 9, 9 and K. Your lowest card is the 3, so 3 is your joker. The joker 3 plus the two 9s makes a trio of 9s."
+},
+"Jokers in the Middle": {
+"p": [
+"Deal 3 cards to everyone.",
+"Open 2 cards on the table.",
+"Every number between those two cards is a joker.",
+"Then normal betting and showdown."
+],
+"e": "The table shows 3 and 7, so 4, 5 and 6 are jokers. You hold 4, A and A. The 4 is a joker, so you have a trio of aces."
+},
+"AK47": {
+"p": [
+"Deal 3 cards to everyone.",
+"Ace, King, 4 and 7 are jokers for everyone.",
+"Then normal betting and showdown."
+],
+"e": "You hold K, 7 and 9. The K and the 7 are both jokers and can act as any card. With the 9, you make a trio of 9s."
+},
+"Skip-Sequence": {
+"p": [
+"Deal 5 cards to everyone.",
+"A sequence is 2 consecutive cards, like 3 and 4.",
+"A skip is 2 cards with a gap of one, like 3 and 5.",
+"Each one forms a joker. You need at least one joker to play.",
+"A skip and a sequence can each be used only once."
+],
+"e": "You hold 3, 4, 7, 9 and K. The 3 and 4 are a sequence joker, and the 7 and 9 are a skip joker. You now have two jokers to build your game with the K."
+},
+"Passing Cards": {
+"p": [
+"Deal 3 cards to everyone.",
+"Give 3 extra cards to the first player.",
+"Each player passes 3 cards to the next player.",
+"When it reaches the dealer, the dealer puts 3 cards back into the pack.",
+"Then 3 jokers are opened and normal betting follows."
+],
+"e": "With 5 players, player 1 has 6 cards and passes 3 to player 2, who now has 6 and passes 3 to player 3, and so on. The dealer ends up with 6 cards and puts 3 back, so everyone holds 3 again."
+},
+"Pack Jack": {
+"p": [
+"Deal 3 cards to everyone.",
+"Open 3 cards on the table as jokers.",
+"When a player packs, their 3 cards become the new jokers.",
+"The old jokers are replaced."
+],
+"e": "The table jokers are 5, 8 and Q. Ravi packs with 2, 9 and K. Now 2, 9 and K are the jokers for everyone still playing."
+},
+"Closest to 555": {
+"p": [
+"Deal 3 cards each.",
+"Read your cards as a 3-digit number. Ace = 1, picture cards = 0.",
+"The closest to 555 wins, above or below.",
+"For 2 rounds you can swap a card for 2 counters: give up a card first, then take a new one.",
+"After the 2 rounds, normal betting."
+],
+"e": "You hold 5, 5 and K (0), which makes 550, 5 away from 555. Another player holds 5, 6 and Ace (1), making 561, 6 away. You win by 1."
+},
+"Rotating Jokers": {
+"p": [
+"Deal 3 cards to each player.",
+"In front of each player: 1 open card and 1 closed card.",
+"The open card is that player’s private joker.",
+"If a player packs, their closed card is flipped and becomes a universal joker for everyone.",
+"All open jokers then rotate: each player gets the joker of the player before them in the direction of the deal."
+],
+"e": "Asha’s open card is 4, Ravi’s is 9 and Meera’s is Q. Ravi packs and his closed card, a 2, becomes a universal joker. The open jokers rotate one seat, so Meera now uses 9 and Asha now uses Q."
+},
+"Banko": {
+"p": [
+"Played turn by turn, each player separately.",
+"The dealer opens 2 cards in front of you.",
+"Bet on how likely the next card falls between them. The minimum bet is 1 counter.",
+"The maximum bet starts at 1/4 of the money in the centre. After a player wins a quarter, it becomes 1/2, then the full amount.",
+"The game ends when a player wins the full money in the centre."
+],
+"e": "The centre holds 40, so your maximum bet is 10. The dealer opens 3 and 10. Plenty of cards fall between them, so you bet 8. The next card is a 7, which is in between, so you win."
+},
+"Complete Game, 2 Open": {
+"p": [
+"Give each player 1 card.",
+"Open 4 or 5 sets of 2 cards side by side on the table.",
+"Your game is your card plus any one of those sets.",
+"Pick your set in your head, do not say it out loud.",
+"Normal betting proceeds."
+],
+"e": "You hold the 8 of spades. The table shows the sets 9 and 10 of spades, K and 2, and 4 and 4. You choose the first set, giving you a pure sequence 8-9-10 of spades."
+},
+"1-2-3 Shopping": {
+"p": [
+"Deal 3 cards each, then 3 shopping rounds. Joining is optional.",
+"Round 1 (1 counter): discard a card first, then take a new one.",
+"Round 2 (2 counters): take a card first, then discard one after seeing all four.",
+"Round 3 (3 counters): take 2 cards, then discard 2 and keep 3.",
+"After the 3 rounds, normal betting. Optionally open a joker at the end."
+],
+"e": "You hold 4, 9 and K. In round 1 you pay 1, discard the K and draw a 5. You skip round 2. In round 3 you pay 3, take 2 cards, and keep the best three."
+},
+"Auction": {
+"p": [
+"Deal 3 cards each.",
+"The table has two 3-card games, each with 2 closed cards and 1 open card.",
+"The 2 open cards are jokers for everyone.",
+"Each table game is auctioned: turn by turn, players bid money or pass.",
+"Once both are sold, normal betting."
+],
+"e": "The open cards are 6 and Q, so 6s and Qs are jokers. Ravi bids 12 and wins table game A, so he plays with it instead of his own cards."
+},
+"One Joker, One Bust": {
+"p": [
+"Deal 3 cards each.",
+"2 cards sit face down on the table: one joker and one bust.",
+"Any hand containing the bust number is a losing game.",
+"Pay 5 counters to see both. Both are active for you.",
+"Pay 10 counters to see only the joker. Only the joker is active for you.",
+"Pay nothing and neither is active. No side show. Optionally add another open joker for everyone."
+],
+"e": "Asha pays 5 and sees the joker is 8 and the bust is 3. Her hand is 8, 5 and K, which has no 3, so she is safe and her 8 works as a joker. Ravi pays nothing, so for him neither card matters."
+},
+"2 Rounds of Buying Cards": {
+"p": [
+"Deal 3 cards each, with 1 card open in front of every player.",
+"Turn by turn, each player’s open card is auctioned and the others bid.",
+"You cannot bid for your own card.",
+"The winner takes the card and puts one of their own cards in its place.",
+"Repeat for round 2 with the new open cards, then normal betting."
+],
+"e": "Asha’s open card is the Q of hearts. Ravi and Meera bid, and Meera wins with a bid of 6. Meera takes the Q and puts one of her own cards face up in its place. That new open card can be bid for in round 2."
+},
+"All Open": {
+"p": [
+"Deal 3 cards each.",
+"Without looking, hold your cards on your forehead so everyone else can see them.",
+"You can see everyone’s game except your own.",
+"Read other players’ reactions to judge your own hand.",
+"Needs honest players. Then normal betting."
+],
+"e": "You see Asha holding a pair and Ravi holding a trio. Ravi looks calm and Asha looks nervous. From their reactions you guess your own hand is strong, and you bet."
+},
+"2 Cards Open": {
+"p": [
+"Deal each player 2 cards face up and the third face down.",
+"Everyone sees 2 cards of every hand.",
+"Bet based on what the hidden card could be, in your game and in your opponents’.",
+"Then normal betting and showdown."
+],
+"e": "You show 5 and 6, so a hidden 4 or 7 gives you a sequence. Ravi shows 9 and 9, and a hidden 9 gives him a trio. You bet carefully."
+},
+"Card, Color, Burst": {
+"p": [
+"Deal 3 cards to each player.",
+"Keep 3 cards face down on the table.",
+"The dealer decides at which pot amounts they open (for example 10, 20 and 30).",
+"1st card: its number is the joker.",
+"2nd card: its suit is the joker, so all cards of that suit are jokers.",
+"3rd card: the burst card. Anyone holding it is eliminated."
+],
+"e": "The dealer sets the amounts at 10, 20 and 30. At 10 the 7 of hearts opens, so all 7s are jokers. At 20 the 3 of spades opens, so all spades are jokers. At 30 the king of clubs opens as the burst card, so anyone holding the king of clubs is out."
+},
+"In-Out": {
+"p": [
+"Everyone puts 2 counters in the kitty. Deal 3 cards each and open 3 jokers.",
+"Turn by turn, each player says in or out.",
+"An out player’s cards become the new jokers, replacing the old ones.",
+"If more than one player is in, compare games with the final jokers. The best game takes the kitty and the losers pay that same amount into the centre.",
+"If only one player is in, they play against a fresh bank hand from the pack. Win: collect all the money and the game ends. Lose: pay that amount in.",
+"When the pot is high, set a limit on what an in player pays, say 30. The dealer rotates every round.",
+"Alternative: with fixed jokers, all players show in or out at once (thumbs up or down on a count of 3). Optionally open a surprise joker after."
+],
+"e": "Four players start with 4, 8 and J as jokers. Asha says out, so her cards become the new jokers. Ravi and Meera say in, and Kabir says out, so his cards replace the jokers again. Ravi and Meera compare games using those jokers. Ravi wins the kitty and Meera pays the same amount into the centre."
+},
+"3-2-1": {
+"p": [
+"Deal 6 cards each.",
+"Split them into 3 games: 3 cards (normal game), 2 cards (Imagine One) and 1 card (highest card wins).",
+"Bet on the 3-card game first, then the 2-card game, then the 1-card game.",
+"Win 2 or more of the 3 games to win everything.",
+"If 3 different players each win one game, 3-2-1 repeats with only those 3 players.",
+"Optionally 2 jokers for the 3-card game and 1 joker for the 2-card game, opened only after everyone has set their split."
+],
+"e": "You hold 9, 9, 5, 8, 7 and K. You play 9-9-5 as your 3-card game, 8-7 as your 2-card game, and K as your 1-card game. You win the 3-card and 1-card games, so you take all the money."
+}
+};
+let V=D.map(a=>({n:a[0],s:a[1],f:F[a[0]]||a[2]||"",off:false}));
+try{const t=localStorage.getItem("tpw-v2");if(t){const p=JSON.parse(t);if(Array.isArray(p)&&p.length)V=p}}catch(e){}
+V.forEach(v=>{if(F[v.n])v.f=F[v.n]});
+function save(){try{localStorage.setItem("tpw-v2",JSON.stringify(V))}catch(e){}}
+const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const cv=document.getElementById("c"),cx=cv.getContext("2d");
+const L={"Lowest Game Wins":"Lowest Wins","Highest / Lowest Card Joker":"Low Card Joker","Jokers in the Middle":"Middle Jokers","Passing Cards":"Pass Cards","Closest to 555":"Closest 555","Rotating Jokers":"Rotate Jokers","Complete Game, 2 Open":"Complete Game","Card, Color, Burst":"Card Color Burst","1-2-3 Shopping":"Shopping","One Joker, One Bust":"Joker & Bust","2 Rounds of Buying Cards":"Buy Cards"};
+const P=["#3b4a8c","#2a9d8f","#e76f51","#d98b1c","#8e4a8a","#4f8a5b","#c2485e"];
+let rot=0,busy=false,snd=true,ac=null;
+function draw(){
+ const R=700,n=V.length,r=R-62;
+ cx.clearRect(0,0,1400,1400);
+ const g=cx.createLinearGradient(0,0,1400,1400);g.addColorStop(0,"#ffffff");g.addColorStop(1,"#d8cfbd");
+ cx.beginPath();cx.arc(R,R,R-3,0,7);cx.fillStyle=g;cx.fill();
+ for(let i=0;i<36;i++){const a=i/36*6.2832;cx.beginPath();cx.arc(R+Math.cos(a)*(R-31),R+Math.sin(a)*(R-31),8,0,7);cx.fillStyle="#c9a24a";cx.fill()}
+ if(!n){cx.fillStyle="#555";cx.beginPath();cx.arc(R,R,r,0,7);cx.fill();cx.fillStyle="#fff";cx.font="bold 44px Georgia";cx.textAlign="center";cx.fillText("Add some variations",R,R);return}
+ const S=2*Math.PI/n;
+ V.forEach((v,k)=>{
+  const s=-Math.PI/2+k*S;
+  cx.beginPath();cx.moveTo(R,R);cx.arc(R,R,r,s,s+S);cx.closePath();
+  let c=P[k%P.length];if(k===n-1&&n>1&&k%P.length===0)c=P[2];
+  cx.fillStyle=v.off?"#c8c8c8":c;cx.fill();
+  cx.strokeStyle="#ffffff";cx.lineWidth=4;cx.stroke();
+  cx.save();cx.translate(R,R);cx.rotate(s+S/2);
+  cx.textAlign="right";cx.textBaseline="middle";
+  cx.font="bold "+Math.max(20,Math.min(50,2*Math.PI*380/n*.6))+"px Georgia";
+  cx.fillStyle=v.off?"#8a8a8a":"#ffffff";
+  cx.fillText(L[v.n]||v.n,r-24,0,r-170);cx.restore();
+ });
+ cx.beginPath();cx.arc(R,R,112,0,7);cx.fillStyle="#2b2f55";cx.fill();
+ cx.lineWidth=8;cx.strokeStyle="#c9a24a";cx.stroke();
+ cx.save();cx.translate(R,R);cx.rotate(-.14);
+ cx.beginPath();if(cx.roundRect)cx.roundRect(-46,-62,92,124,12);else cx.rect(-46,-62,92,124);
+ cx.fillStyle="#ffffff";cx.fill();
+ cx.textAlign="center";cx.textBaseline="middle";
+ cx.fillStyle="#2b2f55";cx.font="bold 42px Georgia";cx.fillText("A",0,-28);
+ cx.fillStyle="#c2485e";cx.font="60px Georgia";cx.fillText("\u2665",0,22);
+ cx.restore();
+}
+function counts(){const n=V.filter(v=>v.off).length,b=document.getElementById("dbadge");b.textContent=n;b.style.display=n?"flex":"none"}
+function refresh(){draw();counts();save()}
+function tone(f,d,t,v,a){if(!snd||!ac)return;const o=ac.createOscillator(),g=ac.createGain(),n=ac.currentTime;o.type=t||"sine";o.frequency.value=f;g.gain.setValueAtTime(.0001,n);g.gain.linearRampToValueAtTime(v||.05,n+(a||.005));g.gain.exponentialRampToValueAtTime(.0001,n+d);o.connect(g);g.connect(ac.destination);o.start(n);o.stop(n+d+.05)}
+function tick(){tone(900+Math.random()*80,.05,"triangle",.04,.002)}
+function chime(){tone(523.25,1.4,"sine",.06,.03);setTimeout(()=>tone(659.25,1.6,"sine",.05,.03),180)}
+const ICON_ON='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>',ICON_OFF='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="m16 9 5 6"/><path d="m21 9-5 6"/></svg>';
+function toggleSnd(){snd=!snd;document.getElementById("snd").innerHTML=snd?ICON_ON:ICON_OFF}
+function spin(){
+ if(busy)return;
+ const a=V.map((v,i)=>i).filter(i=>!V[i].off);
+ if(!a.length){show("<h2>All greyed out</h2><p>Every variation is greyed out. Open Discarded and restore some.</p>");return}
+ try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();if(ac.state==="suspended")ac.resume()}catch(e){ac=null}
+ busy=true;document.getElementById("spin").disabled=true;
+ const k=a[Math.floor(Math.random()*a.length)],S=360/V.length;
+ const center=(k+.5)*S+(Math.random()-.5)*S*.7,start=rot;
+ const delta=360*6+((((-center-start)%360)+360)%360),T0=performance.now(),DUR=5500;
+ let last=-1;
+ (function f(now){
+  const t=Math.min(1,(now-T0)/DUR),e=1-Math.pow(1-t,4);
+  rot=start+delta*e;cv.style.transform="rotate("+rot+"deg)";
+  const idx=Math.floor((((-rot)%360)+360)%360/S);
+  if(idx!==last){tick();last=idx}
+  if(t<1)requestAnimationFrame(f);else done(k);
+ })(performance.now());
+}
+function done(k){
+ rot=rot%360;chime();
+ const v=V[k];let note="";
+ if(document.getElementById("rm").checked){v.off=true;note="<p style='opacity:.7'><small>This one will not be picked again.</small></p>"}
+ refresh();busy=false;document.getElementById("spin").disabled=false;
+ show("<h2>"+esc(v.n)+"</h2>"+fmt(v)+note,"Let’s play");
+}
+function fmt(v){
+ const f=v.f;
+ if(f&&typeof f==="object")return "<p class='lead'>"+esc(v.s)+"</p><h3>How it works</h3><ul>"+f.p.map(x=>"<li>"+esc(x)+"</li>").join("")+"</ul><h3>Example</h3><div class='ex'>"+esc(f.e)+"</div>";
+ return "<p class='lead'>"+esc(v.s)+"</p>"+(f?"<p>"+esc(f)+"</p>":"");
+}
+function show(h,l){document.getElementById("box").innerHTML=h+"<p><button class='pri' onclick='closeM()'>"+(l||"Close")+"</button></p>";document.getElementById("modal").style.display="flex"}
+function closeM(){document.getElementById("modal").style.display="none"}
+function info(i,back){
+ const v=V[i];
+ show("<h2>"+esc(v.n)+"</h2>"+fmt(v)+(back?"<p><button class='lnk' onclick='"+back+"'>Back</button></p>":""));
+}
+function openAll(){
+ show("<h2>All variations ("+V.length+")</h2>"+V.map((v,i)=>"<div class='row"+(v.off?" off":"")+"'><div><b>"+esc(v.n)+"</b>"+(v.off?" (greyed out)":"")+"<small>"+esc(v.s)+"</small></div><button class='ibtn' onclick='info("+i+",\"openAll()\")'>i</button></div>").join(""));
+}
+function openOff(){
+ const o=V.map((v,i)=>i).filter(i=>V[i].off);
+ show("<h2>Discarded variations</h2>"+(o.length?o.map(i=>"<div class='row'><div><b>"+esc(V[i].n)+"</b></div><button class='pri' onclick='restore("+i+")'>Restore</button></div>").join("")+"<p><button class='pri' onclick='restoreAll()'>Restore all</button></p>":"<p>Nothing discarded yet.</p>"));
+}
+function restore(i){V[i].off=false;refresh();openOff()}
+function restoreAll(){V.forEach(v=>v.off=false);refresh();openOff()}
+function openManage(){
+ show("<h2>Add / remove variations</h2><input id='an' placeholder='Variation name'><input id='as' placeholder='Short description (1-2 lines)'><textarea id='af' rows='3' placeholder='Full rules (optional)'></textarea><p><button class='pri' onclick='addV()'>Add variation</button></p><h2>Current list</h2>"+V.map((v,i)=>"<div class='row'><div><b>"+esc(v.n)+"</b></div><button class='dng' onclick='delV("+i+")'>Remove</button></div>").join("")+"<p><button class='dng' onclick='resetV()'>Reset to defaults</button></p>");
+}
+function addV(){
+ const n=document.getElementById("an").value.trim();
+ if(!n)return;
+ V.push({n:n,s:document.getElementById("as").value.trim()||"Custom variation.",f:document.getElementById("af").value.trim(),off:false});
+ refresh();openManage();
+}
+function delV(i){if(confirm("Remove "+V[i].n+" permanently?")){V.splice(i,1);refresh();openManage()}}
+function resetV(){if(confirm("Restore the original variations? Your changes will be lost.")){V=D.map(a=>({n:a[0],s:a[1],f:F[a[0]]||a[2]||"",off:false}));refresh();openManage()}}
+refresh();
+</script>
+</body>
+</html>
